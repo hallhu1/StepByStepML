@@ -29,14 +29,17 @@ print(f"Dataset class distribution:\n{dataset.groupby('class').size()}")
 # Box and whisker plots
 dataset.plot(kind='box', subplots=True, layout=(2,2), sharex=False, sharey=False)
 plt.savefig('box_and_whisker_plots.png')
+plt.close()
 
 # Histogram of the variable
 dataset.hist()
 plt.savefig('histogram_of_the_variable.png')
+plt.close()
 
 # Scatter plot matrix
 scatter_matrix(dataset)
 plt.savefig('scatter_plot_matrix.png')
+plt.close()
 
 # Split-out validation dataset
 array = dataset.values
@@ -46,7 +49,7 @@ X_train, X_validation, y_train, y_validation = train_test_split(X, y, test_size=
 
 # Spot Check Algorithms
 models = []
-models.append(('LR', LogisticRegression(solver='liblinear', multi_class='ovr')))
+models.append(('LR', LogisticRegression(solver='lbfgs', max_iter=1000)))
 models.append(('LDA', LinearDiscriminantAnalysis()))
 models.append(('KNN', KNeighborsClassifier()))
 models.append(('CART', DecisionTreeClassifier()))
@@ -62,3 +65,20 @@ for name, model in models:
     results.append(cv_results)
     names.append(name)
     print(f'{name}: {cv_results.mean()} ({cv_results.std()})')
+
+# Compare Algorithms
+plt.boxplot(results, tick_labels=names)
+plt.title('Algorithm Comparison')
+plt.ylabel('Accuracy')
+plt.xlabel('Algorithm')
+plt.savefig('algorithm_comparison.png')
+plt.close()
+
+# Make predictions on validation dataset
+model = SVC(gamma='scale')
+model.fit(X_train, y_train)
+predictions = model.predict(X_validation)
+print("Final Validation Set Results:")
+print(f"Accuracy: {accuracy_score(y_validation, predictions)}")
+print(f"Confusion Matrix:\n{confusion_matrix(y_validation, predictions)}")
+print(f"Classification Report:\n{classification_report(y_validation, predictions)}")
